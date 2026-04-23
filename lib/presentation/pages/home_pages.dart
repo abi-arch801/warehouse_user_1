@@ -655,11 +655,6 @@ class _HomePageState extends State<HomePage>
         Stack(
           clipBehavior: Clip.none,
           children: [
-            IconButton(
-              icon: const Icon(Icons.notifications_rounded,
-                  color: Colors.white, size: 22),
-              onPressed: () {},
-            ),
             if (_unreadNotifCount > 0)
               Positioned(
                 top: 8,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:warehouse_user_1/presentation/pages/detail_chat_pages.dart';
+import 'package:warehouse_user_1/presentation/pages/pengambilan_pages.dart';
 import 'app_theme.dart';
-
 // ─────────────────────────────────────────────────────────────────────────────
 // List Request Page — Daftar Semua Request
 //
@@ -591,67 +591,116 @@ class _ListRequestPageState extends State<ListRequestPage> {
           const SizedBox(height: 12),
           Divider(height: 1, color: Colors.grey.shade100),
           const SizedBox(height: 10),
-          // Tombol Chat Admin
-          SizedBox(
-            width: double.infinity,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(10),
-                onTap: () => _openChatAdmin(req),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primary.withOpacity(0.25),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.chat_rounded,
-                          color: Colors.white, size: 16),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Chat Admin',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.22),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'tanya request ini',
-                          style: TextStyle(
-                            fontSize: 9.5,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+          // Tombol aksi: Chat Admin (+ Ambil khusus status approved)
+          Row(
+            children: [
+              Expanded(
+                child: _ghostChatButton(
+                  onTap: () => _openChatAdmin(req),
+                  compact: status == 'approved',
                 ),
               ),
-            ),
+              if (status == 'approved') ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _primaryAmbilButton(
+                    onTap: () => _openPengambilan(req),
+                  ),
+                ),
+              ],
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  // ── Tombol Chat Admin (versi ghost / outline) ─────────────────────────────
+  Widget _ghostChatButton(
+      {required VoidCallback onTap, bool compact = false}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: AppTheme.primary.withOpacity(0.25),
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.chat_rounded,
+                  color: AppTheme.primary, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                compact ? 'Chat' : 'Chat Admin',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Tombol Ambil (untuk request yang sudah disetujui) ─────────────────────
+  Widget _primaryAmbilButton({required VoidCallback onTap}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppTheme.statusApproved, Color(0xFF2E7D32)],
+            ),
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.statusApproved.withOpacity(0.35),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.outbox_rounded, color: Colors.white, size: 16),
+              SizedBox(width: 6),
+              Text(
+                'Ambil',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openPengambilan(Map<String, dynamic> req) {
+    HapticFeedback.selectionClick();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => PengambilanPage(request: req)),
     );
   }
 

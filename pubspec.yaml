@@ -31,6 +31,9 @@ dependencies:
   flutter:
     sdk: flutter
   image_picker: ^1.1.2
+  geolocator: ^11.0.0
+
+
 
 
 
