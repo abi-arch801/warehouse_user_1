@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -16,48 +17,64 @@ class _ProfilePageState extends State<ProfilePage>
   bool _notifEmail = false;
   bool _biometric = true;
 
-  final List<Map<String, dynamic>> _menuItems = [
+  // ── Data user (bukan admin) ────────────────────────────────────────────────
+  String _userName = 'Bagas Pratama';
+  String _userPhone = '+62 812-3456-7890';
+  String _userAddress = 'Jl. Melati No. 27, Bandung, Jawa Barat';
+  String _userOffice = 'PT. UCTA';
+  String _userPosition = 'Operator IPAL';
+  final String _userEmail = 'bagas.pratama@tirta-aquatech.id';
+
+  String get _initials {
+    final parts = _userName.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty) return 'U';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return (parts.first.substring(0, 1) + parts.last.substring(0, 1))
+        .toUpperCase();
+  }
+
+  final List<Map<String, dynamic>> _menuItems = const [
     {
       'title': 'Edit Profil',
       'subtitle': 'Ubah informasi akun Anda',
       'icon': Icons.person_outline_rounded,
-      'color': Color(0xFF0288D1),
+      'color': AppTheme.primary,
+      'key': 'edit',
     },
     {
-      'title': 'Manajemen Gudang',
-      'subtitle': 'Kelola akses dan lokasi gudang',
-      'icon': Icons.warehouse_outlined,
-      'color': Color(0xFF00BFA5),
+      'title': 'Riwayat Permintaan',
+      'subtitle': 'Lihat semua permintaan barang Anda',
+      'icon': Icons.receipt_long_rounded,
+      'color': AppTheme.statusApproved,
+      'key': 'history',
     },
     {
-      'title': 'Pengguna & Akses',
-      'subtitle': 'Kelola akun staff dan hak akses',
-      'icon': Icons.group_outlined,
-      'color': Color(0xFF7B1FA2),
+      'title': 'Notifikasi Saya',
+      'subtitle': 'Kelola notifikasi & pengingat',
+      'icon': Icons.notifications_active_outlined,
+      'color': AppTheme.statusPending,
+      'key': 'notif',
     },
     {
-      'title': 'Laporan & Ekspor',
-      'subtitle': 'Unduh laporan dalam format PDF/Excel',
-      'icon': Icons.summarize_outlined,
-      'color': Color(0xFFFF7043),
-    },
-    {
-      'title': 'Integrasi Sistem',
-      'subtitle': 'Hubungkan dengan ERP atau marketplace',
-      'icon': Icons.integration_instructions_outlined,
-      'color': Color(0xFFFFB300),
+      'title': 'Keamanan Akun',
+      'subtitle': 'Ubah password & verifikasi',
+      'icon': Icons.lock_outline_rounded,
+      'color': AppTheme.primaryLight,
+      'key': 'security',
     },
     {
       'title': 'Bantuan & Dukungan',
       'subtitle': 'FAQ, panduan, dan kontak support',
       'icon': Icons.help_outline_rounded,
       'color': Color(0xFF546E7A),
+      'key': 'help',
     },
     {
       'title': 'Tentang Aplikasi',
       'subtitle': 'GudangPro v1.0.0',
       'icon': Icons.info_outline_rounded,
       'color': Color(0xFF546E7A),
+      'key': 'about',
     },
   ];
 
@@ -80,6 +97,342 @@ class _ProfilePageState extends State<ProfilePage>
     super.dispose();
   }
 
+  // ─── Pop-up: Sedang Dalam Pengembangan ─────────────────────────────────────
+  void _showInDevelopmentDialog(String featureName) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 28, 22, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  gradient: AppTheme.primaryGradient,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withOpacity(0.3),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.construction_rounded,
+                  color: Colors.white,
+                  size: 36,
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'Sedang Dalam Tahap Pengembangan',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Fitur "$featureName" akan segera tersedia di pembaruan berikutnya. Terima kasih atas kesabaran Anda.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    minimumSize: const Size.fromHeight(46),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Mengerti',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Pop-up: Edit Profile (setengah layar) ─────────────────────────────────
+  void _showEditProfileSheet() {
+    final nameCtrl = TextEditingController(text: _userName);
+    final phoneCtrl = TextEditingController(text: _userPhone);
+    final addressCtrl = TextEditingController(text: _userAddress);
+    final officeCtrl = TextEditingController(text: _userOffice);
+    final positionCtrl = TextEditingController(text: _userPosition);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  // drag handle
+                  Container(
+                    margin: const EdgeInsets.only(top: 10, bottom: 6),
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  // header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 12, 8),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Edit Profil',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded,
+                              color: AppTheme.primary),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(height: 1, color: Colors.grey.shade100),
+                  // form
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+                      children: [
+                        // Avatar uploader
+                        Center(
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 96,
+                                height: 96,
+                                decoration: BoxDecoration(
+                                  gradient: AppTheme.primaryGradient,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.primary.withOpacity(0.25),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    _initials,
+                                    style: const TextStyle(
+                                      fontSize: 30,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Pilih foto dari galeri (demo).'),
+                                        backgroundColor: AppTheme.primary,
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.statusApproved,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          color: Colors.white, width: 2),
+                                    ),
+                                    child: const Icon(
+                                      Icons.camera_alt_rounded,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: TextButton.icon(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Unggah foto profil (demo).'),
+                                  backgroundColor: AppTheme.primary,
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.upload_rounded,
+                                size: 16, color: AppTheme.primary),
+                            label: const Text(
+                              'Unggah Foto Profil',
+                              style: TextStyle(
+                                color: AppTheme.primary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildTextField(
+                          controller: nameCtrl,
+                          label: 'Nama Lengkap',
+                          icon: Icons.person_outline_rounded,
+                        ),
+                        const SizedBox(height: 14),
+                        _buildTextField(
+                          controller: phoneCtrl,
+                          label: 'Nomor Telepon',
+                          icon: Icons.phone_outlined,
+                          keyboardType: TextInputType.phone,
+                        ),
+                        const SizedBox(height: 14),
+                        _buildTextField(
+                          controller: addressCtrl,
+                          label: 'Alamat',
+                          icon: Icons.location_on_outlined,
+                          maxLines: 2,
+                        ),
+                        const SizedBox(height: 14),
+                        _buildTextField(
+                          controller: officeCtrl,
+                          label: 'Kantor / Perusahaan',
+                          icon: Icons.business_outlined,
+                        ),
+                        const SizedBox(height: 14),
+                        _buildTextField(
+                          controller: positionCtrl,
+                          label: 'Posisi / Jabatan',
+                          icon: Icons.badge_outlined,
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _userName = nameCtrl.text.trim();
+                                _userPhone = phoneCtrl.text.trim();
+                                _userAddress = addressCtrl.text.trim();
+                                _userOffice = officeCtrl.text.trim();
+                                _userPosition = positionCtrl.text.trim();
+                              });
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Profil berhasil diperbarui.'),
+                                  backgroundColor: AppTheme.statusApproved,
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              'Simpan Perubahan',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      style: const TextStyle(
+          fontSize: 14, color: AppTheme.textPrimary, fontWeight: FontWeight.w600),
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20, color: AppTheme.primary),
+      ),
+    );
+  }
+
   void _showLogoutDialog() {
     showDialog(
       context: context,
@@ -89,7 +442,7 @@ class _ProfilePageState extends State<ProfilePage>
           'Keluar Akun?',
           style: TextStyle(
             fontWeight: FontWeight.w700,
-            color: Color(0xFF01579B),
+            color: AppTheme.textPrimary,
           ),
         ),
         content: const Text(
@@ -100,7 +453,7 @@ class _ProfilePageState extends State<ProfilePage>
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Batal',
-                style: TextStyle(color: Color(0xFF0288D1))),
+                style: TextStyle(color: AppTheme.primary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -108,7 +461,7 @@ class _ProfilePageState extends State<ProfilePage>
               Navigator.pushReplacementNamed(context, '/login');
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF5252),
+              backgroundColor: AppTheme.statusRejected,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
@@ -120,90 +473,92 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
+  void _handleMenuTap(Map<String, dynamic> item) {
+    final key = item['key'] as String;
+    if (key == 'edit') {
+      _showEditProfileSheet();
+      return;
+    }
+    _showInDevelopmentDialog(item['title'] as String);
+  }
+
   @override
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _fadeAnim,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF0F9FF),
+        backgroundColor: AppTheme.background,
         body: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
             // Profile header
             SliverAppBar(
-              expandedHeight: 260,
+              expandedHeight: 280,
               pinned: true,
               elevation: 0,
-              backgroundColor: const Color(0xFF0288D1),
+              backgroundColor: AppTheme.primary,
               flexibleSpace: FlexibleSpaceBar(
                 background: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF0277BD),
-                        Color(0xFF0288D1),
-                        Color(0xFF29B6F6),
-                      ],
-                    ),
-                  ),
+                  decoration:
+                      const BoxDecoration(gradient: AppTheme.primaryGradient),
                   child: SafeArea(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const SizedBox(height: 24),
-                        // Avatar
-                        Stack(
-                          children: [
-                            Container(
-                              width: 90,
-                              height: 90,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  'AD',
-                                  style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF0288D1),
+                        // Avatar (tap = open edit profile sheet)
+                        GestureDetector(
+                          onTap: _showEditProfileSheet,
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 90,
+                                height: 90,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    _initials,
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.primary,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Positioned(
-                              bottom: 2,
-                              right: 2,
-                              child: GestureDetector(
-                                onTap: () {},
+                              Positioned(
+                                bottom: 2,
+                                right: 2,
                                 child: Container(
                                   width: 26,
                                   height: 26,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF00BFA5),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.statusApproved,
                                     shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: Colors.white, width: 2),
                                   ),
                                   child: const Icon(Icons.camera_alt_rounded,
-                                      color: Colors.white, size: 14),
+                                      color: Colors.white, size: 12),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 14),
-                        const Text(
-                          'Admin Gudang',
-                          style: TextStyle(
+                        Text(
+                          _userName,
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
@@ -217,34 +572,42 @@ class _ProfilePageState extends State<ProfilePage>
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'admin@gudangpro.id  •  Super Admin',
-                            style: TextStyle(
+                          child: Text(
+                            '$_userPosition  •  $_userOffice',
+                            style: const TextStyle(
                               fontSize: 11,
                               color: Colors.white,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        // Stats row
+                        const SizedBox(height: 6),
+                        Text(
+                          _userEmail,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.white.withOpacity(0.85),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        // Stats row (user-centric)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _buildProfileStat('3', 'Gudang'),
+                            _buildProfileStat('24', 'Permintaan'),
                             Container(
                                 height: 28,
                                 width: 1,
                                 color: Colors.white.withOpacity(0.3),
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 20)),
-                            _buildProfileStat('12', 'Staff'),
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 20)),
+                            _buildProfileStat('19', 'Disetujui'),
                             Container(
                                 height: 28,
                                 width: 1,
                                 color: Colors.white.withOpacity(0.3),
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 20)),
-                            _buildProfileStat('847', 'Transaksi'),
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 20)),
+                            _buildProfileStat('3', 'Pending'),
                           ],
                         ),
                       ],
@@ -264,7 +627,7 @@ class _ProfilePageState extends State<ProfilePage>
                 IconButton(
                   icon: const Icon(Icons.settings_rounded,
                       color: Colors.white, size: 22),
-                  onPressed: () {},
+                  onPressed: () => _showInDevelopmentDialog('Pengaturan'),
                 ),
               ],
             ),
@@ -276,7 +639,7 @@ class _ProfilePageState extends State<ProfilePage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Pengaturan Notifikasi
-                    _buildSectionTitle('Pengaturan Notifikasi'),
+                    _buildSectionTitle('Preferensi Akun'),
                     const SizedBox(height: 10),
                     Container(
                       decoration: BoxDecoration(
@@ -284,8 +647,7 @@ class _ProfilePageState extends State<ProfilePage>
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                const Color(0xFF0288D1).withOpacity(0.08),
+                            color: AppTheme.primary.withOpacity(0.08),
                             blurRadius: 16,
                             offset: const Offset(0, 6),
                           ),
@@ -295,33 +657,42 @@ class _ProfilePageState extends State<ProfilePage>
                         children: [
                           _buildToggleTile(
                             icon: Icons.notifications_rounded,
-                            color: const Color(0xFF0288D1),
+                            color: AppTheme.primary,
                             title: 'Notifikasi Push',
-                            subtitle: 'Terima notifikasi langsung di perangkat',
+                            subtitle:
+                                'Terima notifikasi langsung di perangkat',
                             value: _notifPush,
                             onChanged: (val) =>
                                 setState(() => _notifPush = val),
                             isFirst: true,
                             isLast: false,
                           ),
-                          Divider(height: 1, color: Colors.grey.shade100, indent: 60),
+                          Divider(
+                              height: 1,
+                              color: Colors.grey.shade100,
+                              indent: 60),
                           _buildToggleTile(
                             icon: Icons.email_rounded,
-                            color: const Color(0xFF00BFA5),
+                            color: AppTheme.statusApproved,
                             title: 'Notifikasi Email',
-                            subtitle: 'Terima ringkasan harian via email',
+                            subtitle:
+                                'Terima ringkasan harian via email',
                             value: _notifEmail,
                             onChanged: (val) =>
                                 setState(() => _notifEmail = val),
                             isFirst: false,
                             isLast: false,
                           ),
-                          Divider(height: 1, color: Colors.grey.shade100, indent: 60),
+                          Divider(
+                              height: 1,
+                              color: Colors.grey.shade100,
+                              indent: 60),
                           _buildToggleTile(
                             icon: Icons.fingerprint_rounded,
-                            color: const Color(0xFF7B1FA2),
+                            color: AppTheme.primaryLight,
                             title: 'Login Biometrik',
-                            subtitle: 'Gunakan sidik jari atau face ID',
+                            subtitle:
+                                'Gunakan sidik jari atau face ID',
                             value: _biometric,
                             onChanged: (val) =>
                                 setState(() => _biometric = val),
@@ -343,7 +714,7 @@ class _ProfilePageState extends State<ProfilePage>
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF0288D1).withOpacity(0.08),
+                            color: AppTheme.primary.withOpacity(0.08),
                             blurRadius: 16,
                             offset: const Offset(0, 6),
                           ),
@@ -362,6 +733,7 @@ class _ProfilePageState extends State<ProfilePage>
                                 subtitle: item['subtitle'] as String,
                                 isFirst: index == 0,
                                 isLast: index == _menuItems.length - 1,
+                                onTap: () => _handleMenuTap(item),
                               ),
                               if (index < _menuItems.length - 1)
                                 Divider(
@@ -392,13 +764,14 @@ class _ProfilePageState extends State<ProfilePage>
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF5252).withOpacity(0.1),
-                          foregroundColor: const Color(0xFFFF5252),
+                          backgroundColor:
+                              AppTheme.statusRejected.withOpacity(0.1),
+                          foregroundColor: AppTheme.statusRejected,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: const BorderSide(
-                              color: Color(0xFFFF5252),
+                              color: AppTheme.statusRejected,
                               width: 1.5,
                             ),
                           ),
@@ -457,7 +830,7 @@ class _ProfilePageState extends State<ProfilePage>
       style: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w700,
-        color: Color(0xFF0277BD),
+        color: AppTheme.primaryDark,
         letterSpacing: 0.3,
       ),
     );
@@ -496,12 +869,13 @@ class _ProfilePageState extends State<ProfilePage>
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF01579B),
+                    color: AppTheme.textPrimary,
                   ),
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  style:
+                      TextStyle(fontSize: 11, color: Colors.grey.shade500),
                 ),
               ],
             ),
@@ -509,10 +883,10 @@ class _ProfilePageState extends State<ProfilePage>
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF0288D1),
+            activeColor: AppTheme.primary,
             trackColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
-                return const Color(0xFF0288D1).withOpacity(0.3);
+                return AppTheme.primary.withOpacity(0.3);
               }
               return Colors.grey.shade200;
             }),
@@ -529,9 +903,10 @@ class _ProfilePageState extends State<ProfilePage>
     required String subtitle,
     required bool isFirst,
     required bool isLast,
+    required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       borderRadius: BorderRadius.vertical(
         top: isFirst ? const Radius.circular(18) : Radius.zero,
         bottom: isLast ? const Radius.circular(18) : Radius.zero,
@@ -559,17 +934,19 @@ class _ProfilePageState extends State<ProfilePage>
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF01579B),
+                      color: AppTheme.textPrimary,
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                    style:
+                        TextStyle(fontSize: 11, color: Colors.grey.shade500),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300, size: 20),
+            Icon(Icons.chevron_right_rounded,
+                color: Colors.grey.shade300, size: 20),
           ],
         ),
       ),

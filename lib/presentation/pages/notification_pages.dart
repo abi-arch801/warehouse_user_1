@@ -331,10 +331,6 @@ class _NotificationPageState extends State<NotificationPage>
       pinned: true,
       elevation: 0,
       backgroundColor: AppTheme.primaryDark,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-        onPressed: () => Navigator.pop(context),
-      ),
       actions: [
         if (_unreadCount > 0)
           TextButton.icon(
@@ -375,7 +371,7 @@ class _NotificationPageState extends State<NotificationPage>
               ),
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(60, 14, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(15, 5, 5, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,

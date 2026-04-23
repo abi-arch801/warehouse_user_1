@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -15,102 +16,151 @@ class _HistoryPageState extends State<HistoryPage>
   int _selectedFilter = 0;
   final List<String> _filters = ['Semua', 'Masuk', 'Keluar', 'Transfer'];
 
+  // ── Dummy data riwayat transaksi IPAL ──────────────────────────────────────
   final List<Map<String, dynamic>> _history = [
     {
       'type': 'masuk',
-      'item': 'Laptop Acer Aspire 5',
-      'code': 'TRX-2026041020',
-      'qty': 25,
+      'item': 'Pompa Submersible 1 HP',
+      'code': 'TRX-2026042022',
+      'qty': 8,
       'unit': 'unit',
       'date': '20 Apr 2026',
       'time': '10:32',
       'by': 'Ahmad Fauzi',
-      'warehouse': 'Gudang A',
-      'notes': 'Pengiriman dari vendor PT. Teknindo',
+      'warehouse': 'Gudang IPAL · Rak A-03',
+      'notes': 'Pengiriman dari vendor PT. Aquatech Mandiri',
     },
     {
       'type': 'keluar',
-      'item': 'Keyboard Mechanical RGB',
-      'code': 'TRX-2026041019',
-      'qty': 10,
+      'item': 'Filter Cartridge 10" 5µm',
+      'code': 'TRX-2026042021',
+      'qty': 24,
       'unit': 'unit',
       'date': '20 Apr 2026',
       'time': '09:15',
       'by': 'Siti Rahayu',
-      'warehouse': 'Gudang B',
-      'notes': 'Pengiriman ke toko Surabaya',
+      'warehouse': 'Gudang IPAL · Rak B-07',
+      'notes': 'Penggantian rutin filter unit IPAL Plant 02',
     },
     {
       'type': 'transfer',
-      'item': 'Monitor LG 27 inch',
-      'code': 'TRF-2026041018',
-      'qty': 5,
+      'item': 'Blower Roots 1 HP',
+      'code': 'TRF-2026042020',
+      'qty': 2,
       'unit': 'unit',
       'date': '20 Apr 2026',
       'time': '08:00',
-      'by': 'Budi Santoso',
-      'warehouse': 'Gudang A → Gudang C',
-      'notes': 'Transfer antar cabang',
+      'by': 'Rudi Hermawan',
+      'warehouse': 'Gudang IPAL A → Gudang IPAL C',
+      'notes': 'Transfer untuk perawatan unit aerasi',
     },
     {
       'type': 'masuk',
-      'item': 'Mouse Wireless Logitech',
-      'code': 'TRX-2026041917',
-      'qty': 50,
+      'item': 'Membran RO 4040',
+      'code': 'TRX-2026041919',
+      'qty': 12,
       'unit': 'unit',
       'date': '19 Apr 2026',
       'time': '14:45',
       'by': 'Ahmad Fauzi',
-      'warehouse': 'Gudang A',
-      'notes': 'Restok bulanan dari distributor',
+      'warehouse': 'Gudang IPAL · Rak B-12',
+      'notes': 'Restok bulanan dari distributor utama',
     },
     {
       'type': 'keluar',
-      'item': 'Headset Sony WH-1000XM5',
-      'code': 'TRX-2026041916',
-      'qty': 3,
+      'item': 'Diffuser Gelembung Halus 9"',
+      'code': 'TRX-2026041918',
+      'qty': 30,
       'unit': 'unit',
       'date': '19 Apr 2026',
       'time': '11:30',
       'by': 'Dewi Lestari',
-      'warehouse': 'Gudang A',
-      'notes': 'Pembelian pelanggan B2B',
+      'warehouse': 'Gudang IPAL · Rak C-05',
+      'notes': 'Instalasi tangki aerasi proyek WWTP Cikarang',
     },
     {
       'type': 'keluar',
-      'item': 'Webcam Logitech C920',
-      'code': 'TRX-2026041915',
-      'qty': 8,
-      'unit': 'unit',
+      'item': 'Pipa PVC AW 2" / 6m',
+      'code': 'TRX-2026041917',
+      'qty': 50,
+      'unit': 'meter',
       'date': '19 Apr 2026',
       'time': '09:00',
       'by': 'Reza Permana',
-      'warehouse': 'Gudang B',
-      'notes': 'Pengiriman ke klien korporat',
+      'warehouse': 'Gudang IPAL · Rak D-02',
+      'notes': 'Pemasangan jalur outlet IPAL klien korporat',
     },
     {
       'type': 'transfer',
-      'item': 'SSD Samsung 1TB',
-      'code': 'TRF-2026041814',
-      'qty': 20,
+      'item': 'MCB 3 Phase 16A',
+      'code': 'TRF-2026041816',
+      'qty': 15,
       'unit': 'unit',
       'date': '18 Apr 2026',
       'time': '16:20',
-      'by': 'Budi Santoso',
-      'warehouse': 'Gudang C → Gudang A',
-      'notes': 'Konsolidasi stok pusat',
+      'by': 'Rudi Hermawan',
+      'warehouse': 'Gudang IPAL C → Gudang IPAL A',
+      'notes': 'Konsolidasi stok panel kontrol pusat',
     },
     {
       'type': 'masuk',
-      'item': 'Flash Disk Kingston 64GB',
-      'code': 'TRX-2026041813',
-      'qty': 200,
+      'item': 'Media Karbon Aktif 25kg',
+      'code': 'TRX-2026041815',
+      'qty': 40,
+      'unit': 'kg',
+      'date': '18 Apr 2026',
+      'time': '13:10',
+      'by': 'Ahmad Fauzi',
+      'warehouse': 'Gudang IPAL · Rak B-09',
+      'notes': 'PO batch Q2 2026 — media filter',
+    },
+    {
+      'type': 'keluar',
+      'item': 'Ball Valve PVC 2"',
+      'code': 'TRX-2026041814',
+      'qty': 18,
       'unit': 'unit',
       'date': '18 Apr 2026',
       'time': '10:10',
+      'by': 'Siti Rahayu',
+      'warehouse': 'Gudang IPAL · Rak D-08',
+      'notes': 'Penggantian valve bocor di area pre-treatment',
+    },
+    {
+      'type': 'masuk',
+      'item': 'Bearing 6206 ZZ',
+      'code': 'TRX-2026041713',
+      'qty': 60,
+      'unit': 'unit',
+      'date': '17 Apr 2026',
+      'time': '15:30',
       'by': 'Ahmad Fauzi',
-      'warehouse': 'Gudang A',
-      'notes': 'PO batch Q2 2026',
+      'warehouse': 'Gudang IPAL · Rak A-11',
+      'notes': 'Restok spare part pompa & blower',
+    },
+    {
+      'type': 'transfer',
+      'item': 'Panel Box IP54 600x400',
+      'code': 'TRF-2026041712',
+      'qty': 4,
+      'unit': 'unit',
+      'date': '17 Apr 2026',
+      'time': '11:00',
+      'by': 'Budi Santoso',
+      'warehouse': 'Gudang IPAL B → Gudang IPAL A',
+      'notes': 'Persiapan proyek panel kontrol IPAL Plant 03',
+    },
+    {
+      'type': 'keluar',
+      'item': 'UV Sterilizer 11W',
+      'code': 'TRX-2026041711',
+      'qty': 6,
+      'unit': 'unit',
+      'date': '17 Apr 2026',
+      'time': '08:45',
+      'by': 'Dewi Lestari',
+      'warehouse': 'Gudang IPAL · Rak B-15',
+      'notes': 'Pengiriman ke unit polishing IPAL klien',
     },
   ];
 
@@ -123,13 +173,13 @@ class _HistoryPageState extends State<HistoryPage>
   Color _typeColor(String type) {
     switch (type) {
       case 'masuk':
-        return const Color(0xFF00BFA5);
+        return AppTheme.statusApproved;
       case 'keluar':
-        return const Color(0xFFFF7043);
+        return AppTheme.statusRejected;
       case 'transfer':
-        return const Color(0xFF7B1FA2);
+        return AppTheme.primaryLight;
       default:
-        return const Color(0xFF0288D1);
+        return AppTheme.primary;
     }
   }
 
@@ -183,10 +233,8 @@ class _HistoryPageState extends State<HistoryPage>
     return FadeTransition(
       opacity: _fadeAnim,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF0F9FF),
+        backgroundColor: AppTheme.background,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF0288D1),
-          elevation: 0,
           title: const Text(
             'Riwayat Transaksi',
             style: TextStyle(
@@ -195,13 +243,18 @@ class _HistoryPageState extends State<HistoryPage>
               color: Colors.white,
             ),
           ),
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(gradient: AppTheme.primaryGradient),
+          ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.filter_list_rounded, color: Colors.white, size: 22),
+              icon: const Icon(Icons.filter_list_rounded,
+                  color: Colors.white, size: 22),
               onPressed: () {},
             ),
             IconButton(
-              icon: const Icon(Icons.download_rounded, color: Colors.white, size: 22),
+              icon: const Icon(Icons.download_rounded,
+                  color: Colors.white, size: 22),
               onPressed: () {},
             ),
           ],
@@ -210,20 +263,34 @@ class _HistoryPageState extends State<HistoryPage>
           children: [
             // Stats bar
             Container(
-              color: const Color(0xFF0288D1),
+              decoration: const BoxDecoration(gradient: AppTheme.primaryGradient),
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Row(
                 children: [
-                  _buildMiniStat('Total', '${_history.length}', Icons.receipt_long_rounded, Colors.white),
-                  _buildMiniStat('Masuk',
-                      '${_history.where((h) => h['type'] == 'masuk').length}',
-                      Icons.south_rounded, const Color(0xFFB2EBF2)),
-                  _buildMiniStat('Keluar',
-                      '${_history.where((h) => h['type'] == 'keluar').length}',
-                      Icons.north_rounded, const Color(0xFFFFCCBC)),
-                  _buildMiniStat('Transfer',
-                      '${_history.where((h) => h['type'] == 'transfer').length}',
-                      Icons.swap_horiz_rounded, const Color(0xFFE1BEE7)),
+                  _buildMiniStat(
+                    'Total',
+                    '${_history.length}',
+                    Icons.receipt_long_rounded,
+                    Colors.white,
+                  ),
+                  _buildMiniStat(
+                    'Masuk',
+                    '${_history.where((h) => h['type'] == 'masuk').length}',
+                    Icons.south_rounded,
+                    AppTheme.bgApproved,
+                  ),
+                  _buildMiniStat(
+                    'Keluar',
+                    '${_history.where((h) => h['type'] == 'keluar').length}',
+                    Icons.north_rounded,
+                    AppTheme.bgRejected,
+                  ),
+                  _buildMiniStat(
+                    'Transfer',
+                    '${_history.where((h) => h['type'] == 'transfer').length}',
+                    Icons.swap_horiz_rounded,
+                    AppTheme.primaryPale,
+                  ),
                 ],
               ),
             ),
@@ -247,13 +314,13 @@ class _HistoryPageState extends State<HistoryPage>
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFF0288D1)
-                              : const Color(0xFFF0F9FF),
+                              ? AppTheme.primary
+                              : AppTheme.background,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: isSelected
-                                ? const Color(0xFF0288D1)
-                                : const Color(0xFF29B6F6).withOpacity(0.3),
+                                ? AppTheme.primary
+                                : AppTheme.primaryLight.withOpacity(0.3),
                             width: 1.5,
                           ),
                         ),
@@ -262,9 +329,8 @@ class _HistoryPageState extends State<HistoryPage>
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: isSelected
-                                ? Colors.white
-                                : const Color(0xFF0288D1),
+                            color:
+                                isSelected ? Colors.white : AppTheme.primary,
                           ),
                         ),
                       ),
@@ -314,7 +380,7 @@ class _HistoryPageState extends State<HistoryPage>
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF0288D1)
+                                        color: AppTheme.primary
                                             .withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
@@ -323,7 +389,7 @@ class _HistoryPageState extends State<HistoryPage>
                                         style: const TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
-                                          color: Color(0xFF0288D1),
+                                          color: AppTheme.primary,
                                         ),
                                       ),
                                     ),
@@ -349,7 +415,8 @@ class _HistoryPageState extends State<HistoryPage>
     );
   }
 
-  Widget _buildMiniStat(String label, String value, IconData icon, Color color) {
+  Widget _buildMiniStat(
+      String label, String value, IconData icon, Color color) {
     return Expanded(
       child: Column(
         children: [
@@ -367,7 +434,7 @@ class _HistoryPageState extends State<HistoryPage>
             label,
             style: TextStyle(
               fontSize: 10,
-              color: color.withOpacity(0.8),
+              color: color.withOpacity(0.85),
             ),
           ),
         ],
@@ -419,7 +486,7 @@ class _HistoryPageState extends State<HistoryPage>
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF01579B),
+                      color: AppTheme.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -435,13 +502,13 @@ class _HistoryPageState extends State<HistoryPage>
                   Row(
                     children: [
                       const Icon(Icons.person_outline_rounded,
-                          size: 11, color: Color(0xFF0288D1)),
+                          size: 11, color: AppTheme.primary),
                       const SizedBox(width: 3),
                       Text(
                         '${item['by']}',
                         style: const TextStyle(
                           fontSize: 11,
-                          color: Color(0xFF0288D1),
+                          color: AppTheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -456,11 +523,13 @@ class _HistoryPageState extends State<HistoryPage>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: color.withOpacity(0.2), width: 1),
+                    border:
+                        Border.all(color: color.withOpacity(0.2), width: 1),
                   ),
                   child: Text(
                     '${type == 'keluar' ? '-' : '+'}${item['qty']} ${item['unit']}',
@@ -473,7 +542,8 @@ class _HistoryPageState extends State<HistoryPage>
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(6),
@@ -527,7 +597,7 @@ class _HistoryPageState extends State<HistoryPage>
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF01579B),
+                color: AppTheme.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
@@ -569,7 +639,7 @@ class _HistoryPageState extends State<HistoryPage>
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF01579B),
+                color: AppTheme.textPrimary,
               ),
             ),
           ),
