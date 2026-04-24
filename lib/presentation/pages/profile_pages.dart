@@ -17,11 +17,21 @@ class _ProfilePageState extends State<ProfilePage>
   bool _notifEmail = false;
   bool _biometric = true;
 
+  // ── Status pengajuan role admin ────────────────────────────────────────────
+  // 'none'      -> belum pernah mengajukan
+  // 'pending'   -> sudah dikirim, menunggu review
+  // 'approved'  -> disetujui, user bisa beralih ke mode admin
+  // 'rejected'  -> ditolak, bisa mengajukan ulang
+  String _adminRequestStatus = 'none';
+  DateTime? _adminRequestDate;
+  String? _adminRequestReason;
+  String? _adminRejectReason;
+
   // ── Data user (bukan admin) ────────────────────────────────────────────────
   String _userName = 'Bagas Pratama';
   String _userPhone = '+62 812-3456-7890';
   String _userAddress = 'Jl. Melati No. 27, Bandung, Jawa Barat';
-  String _userOffice = 'PT. UCTA';
+  String _userOffice = 'PT. Tirta Aquatech Mandiri';
   String _userPosition = 'Operator IPAL';
   final String _userEmail = 'bagas.pratama@tirta-aquatech.id';
 
@@ -638,6 +648,13 @@ class _ProfilePageState extends State<ProfilePage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // ── Akses & Peran (Pengajuan jadi Admin) ──────────────
+                    _buildSectionTitle('Akses & Peran'),
+                    const SizedBox(height: 10),
+                    _buildAdminRequestCard(),
+
+                    const SizedBox(height: 20),
+
                     // Pengaturan Notifikasi
                     _buildSectionTitle('Preferensi Akun'),
                     const SizedBox(height: 10),
@@ -950,6 +967,1339 @@ class _ProfilePageState extends State<ProfilePage>
           ],
         ),
       ),
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // ── ADMIN ROLE REQUEST ────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // Format tanggal singkat: "24 Apr 2026"
+  String _formatShortDate(DateTime d) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+    ];
+    return '${d.day.toString().padLeft(2, '0')} ${months[d.month - 1]} ${d.year}';
+  }
+
+  // Kartu utama yang berubah tampilan sesuai status pengajuan.
+  Widget _buildAdminRequestCard() {
+    switch (_adminRequestStatus) {
+      case 'pending':
+        return _buildAdminCardPending();
+      case 'approved':
+        return _buildAdminCardApproved();
+      case 'rejected':
+        return _buildAdminCardRejected();
+      case 'none':
+      default:
+        return _buildAdminCardNone();
+    }
+  }
+
+  // ── State: belum pernah mengajukan ────────────────────────────────────────
+  Widget _buildAdminCardNone() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppTheme.primaryGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withOpacity(0.28),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Dekorasi lingkaran di pojok
+          Positioned(
+            right: -22,
+            top: -22,
+            child: Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.08),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 30,
+            bottom: -28,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.06),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.22),
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: const Icon(
+                        Icons.workspace_premium_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Tingkatkan ke Admin',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Kelola gudang & setujui permintaan tim',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: Colors.white.withOpacity(0.85),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.14),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: const [
+                      _AdminPerk(
+                          icon: Icons.verified_user_rounded,
+                          text: 'Menyetujui / menolak permintaan barang'),
+                      SizedBox(height: 6),
+                      _AdminPerk(
+                          icon: Icons.inventory_rounded,
+                          text: 'Mengelola stok & katalog gudang'),
+                      SizedBox(height: 6),
+                      _AdminPerk(
+                          icon: Icons.insights_rounded,
+                          text: 'Melihat laporan & statistik penuh'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ElevatedButton.icon(
+                    onPressed: _showAdminRequestSheet,
+                    icon: const Icon(Icons.send_rounded, size: 16),
+                    label: const Text(
+                      'Ajukan Sekarang',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppTheme.primary,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── State: sedang menunggu review ─────────────────────────────────────────
+  Widget _buildAdminCardPending() {
+    final dateStr = _adminRequestDate != null
+        ? _formatShortDate(_adminRequestDate!)
+        : '-';
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppTheme.statusPending.withOpacity(0.35),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.statusPending.withOpacity(0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppTheme.statusPending.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.hourglass_top_rounded,
+                  color: AppTheme.statusPending,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Pengajuan Admin Sedang Ditinjau',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Diajukan pada $dateStr',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.statusPending,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'PENDING',
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.background,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline_rounded,
+                    size: 16, color: Colors.grey.shade600),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Estimasi review 1–3 hari kerja oleh tim Super Admin. Anda akan mendapatkan notifikasi saat keputusan keluar.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade700,
+                      height: 1.45,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _showAdminRequestDetailSheet,
+                  icon: const Icon(Icons.description_outlined, size: 16),
+                  label: const Text(
+                    'Lihat Detail',
+                    style: TextStyle(
+                        fontSize: 12.5, fontWeight: FontWeight.w700),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primary,
+                    side: BorderSide(
+                        color: AppTheme.primary.withOpacity(0.5),
+                        width: 1.4),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(11)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _confirmCancelAdminRequest,
+                  icon: const Icon(Icons.cancel_outlined, size: 16),
+                  label: const Text(
+                    'Batalkan',
+                    style: TextStyle(
+                        fontSize: 12.5, fontWeight: FontWeight.w700),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        AppTheme.statusRejected.withOpacity(0.1),
+                    foregroundColor: AppTheme.statusRejected,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(11),
+                      side: BorderSide(
+                          color:
+                              AppTheme.statusRejected.withOpacity(0.4),
+                          width: 1.4),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── State: pengajuan disetujui ────────────────────────────────────────────
+  Widget _buildAdminCardApproved() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppTheme.statusApproved.withOpacity(0.4),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.statusApproved.withOpacity(0.14),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppTheme.statusApproved.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.verified_rounded,
+                  color: AppTheme.statusApproved,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Pengajuan Admin Disetujui',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Anda kini memiliki akses ke mode Admin.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.statusApproved,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton.icon(
+              onPressed: () =>
+                  _showInDevelopmentDialog('Mode Admin'),
+              icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+              label: const Text(
+                'Beralih ke Mode Admin',
+                style: TextStyle(
+                    fontSize: 13.5, fontWeight: FontWeight.w800),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.statusApproved,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── State: pengajuan ditolak ──────────────────────────────────────────────
+  Widget _buildAdminCardRejected() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppTheme.statusRejected.withOpacity(0.4),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.statusRejected.withOpacity(0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppTheme.statusRejected.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.cancel_rounded,
+                  color: AppTheme.statusRejected,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Pengajuan Admin Ditolak',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Anda dapat mengajukan kembali setelah memenuhi syarat.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.statusRejected,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if ((_adminRejectReason ?? '').isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.statusRejected.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: AppTheme.statusRejected.withOpacity(0.18),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.error_outline_rounded,
+                      size: 16, color: AppTheme.statusRejected),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Alasan penolakan: ${_adminRejectReason!}',
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.w500,
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton.icon(
+              onPressed: _showAdminRequestSheet,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text(
+                'Ajukan Ulang',
+                style: TextStyle(
+                    fontSize: 13.5, fontWeight: FontWeight.w800),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Bottom sheet: form pengajuan jadi admin ───────────────────────────────
+  void _showAdminRequestSheet() {
+    final formKey = GlobalKey<FormState>();
+    final reasonCtrl = TextEditingController(text: _adminRequestReason ?? '');
+    final experienceCtrl = TextEditingController();
+    final divisionCtrl = TextEditingController(text: _userOffice);
+    final supervisorCtrl = TextEditingController();
+    bool agreement = false;
+    String? attachmentLabel;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.92,
+          minChildSize: 0.55,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (ctx, scrollController) {
+            return StatefulBuilder(
+              builder: (ctx, setSheet) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(24)),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        margin:
+                            const EdgeInsets.only(top: 10, bottom: 6),
+                        width: 42,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(20, 8, 12, 8),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                gradient: AppTheme.primaryGradient,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.workspace_premium_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Ajukan Sebagai Admin',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Lengkapi data berikut untuk ditinjau',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close_rounded,
+                                  color: AppTheme.primary),
+                              onPressed: () => Navigator.pop(ctx),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(
+                          height: 1, color: Colors.grey.shade100),
+                      Expanded(
+                        child: Form(
+                          key: formKey,
+                          child: ListView(
+                            controller: scrollController,
+                            padding: const EdgeInsets.fromLTRB(
+                                20, 16, 20, 20),
+                            children: [
+                              // Banner penjelasan
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color:
+                                      AppTheme.primary.withOpacity(0.06),
+                                  borderRadius:
+                                      BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppTheme.primary
+                                        .withOpacity(0.18),
+                                  ),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: const [
+                                    Icon(Icons.shield_rounded,
+                                        size: 18,
+                                        color: AppTheme.primary),
+                                    SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        'Sebagai admin, Anda akan dapat menyetujui permintaan barang, mengelola stok gudang, dan melihat laporan penuh. Pastikan informasi yang Anda berikan akurat.',
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          color: AppTheme.textPrimary,
+                                          height: 1.5,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 18),
+
+                              // Data akun ringkas (read-only)
+                              _buildAdminInfoTile(
+                                  Icons.person_rounded,
+                                  'Nama',
+                                  _userName),
+                              const SizedBox(height: 8),
+                              _buildAdminInfoTile(Icons.email_rounded,
+                                  'Email', _userEmail),
+                              const SizedBox(height: 8),
+                              _buildAdminInfoTile(Icons.badge_rounded,
+                                  'Posisi Saat Ini', _userPosition),
+                              const SizedBox(height: 18),
+
+                              _buildAdminFieldLabel('Divisi / Departemen'),
+                              const SizedBox(height: 6),
+                              _buildAdminTextField(
+                                controller: divisionCtrl,
+                                hint: 'Contoh: Divisi IPAL',
+                                icon: Icons.business_rounded,
+                                validator: (v) => (v == null ||
+                                        v.trim().isEmpty)
+                                    ? 'Wajib diisi'
+                                    : null,
+                              ),
+                              const SizedBox(height: 14),
+
+                              _buildAdminFieldLabel(
+                                  'Alasan Pengajuan'),
+                              const SizedBox(height: 6),
+                              _buildAdminTextField(
+                                controller: reasonCtrl,
+                                hint:
+                                    'Jelaskan kenapa Anda perlu akses admin...',
+                                icon: Icons.edit_note_rounded,
+                                maxLines: 4,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Tolong jelaskan alasan Anda';
+                                  }
+                                  if (v.trim().length < 20) {
+                                    return 'Minimal 20 karakter';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 14),
+
+                              _buildAdminFieldLabel(
+                                  'Pengalaman Mengelola Inventory'),
+                              const SizedBox(height: 6),
+                              _buildAdminTextField(
+                                controller: experienceCtrl,
+                                hint:
+                                    'Contoh: 2 tahun mengelola stok bahan kimia...',
+                                icon: Icons.history_edu_rounded,
+                                maxLines: 3,
+                                validator: (v) => (v == null ||
+                                        v.trim().isEmpty)
+                                    ? 'Wajib diisi'
+                                    : null,
+                              ),
+                              const SizedBox(height: 14),
+
+                              _buildAdminFieldLabel(
+                                  'Atasan Langsung (opsional)'),
+                              const SizedBox(height: 6),
+                              _buildAdminTextField(
+                                controller: supervisorCtrl,
+                                hint:
+                                    'Nama atasan / email rekomendasi',
+                                icon: Icons
+                                    .supervisor_account_rounded,
+                              ),
+                              const SizedBox(height: 14),
+
+                              _buildAdminFieldLabel(
+                                  'Dokumen Pendukung (opsional)'),
+                              const SizedBox(height: 6),
+                              GestureDetector(
+                                onTap: () {
+                                  setSheet(() {
+                                    attachmentLabel = attachmentLabel ==
+                                            null
+                                        ? 'SK_Penugasan.pdf'
+                                        : null;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 14),
+                                  decoration: BoxDecoration(
+                                    color: attachmentLabel != null
+                                        ? AppTheme.primary
+                                            .withOpacity(0.06)
+                                        : AppTheme.background,
+                                    borderRadius:
+                                        BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: attachmentLabel != null
+                                          ? AppTheme.primary
+                                              .withOpacity(0.4)
+                                          : Colors.grey.shade300,
+                                      width: 1.4,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: attachmentLabel != null
+                                              ? AppTheme.primary
+                                              : AppTheme.primary
+                                                  .withOpacity(0.12),
+                                          borderRadius:
+                                              BorderRadius.circular(
+                                                  10),
+                                        ),
+                                        child: Icon(
+                                          attachmentLabel != null
+                                              ? Icons
+                                                  .description_rounded
+                                              : Icons
+                                                  .upload_file_rounded,
+                                          color: attachmentLabel != null
+                                              ? Colors.white
+                                              : AppTheme.primary,
+                                          size: 20,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment
+                                                  .start,
+                                          children: [
+                                            Text(
+                                              attachmentLabel ??
+                                                  'Unggah SK / Surat Tugas',
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight:
+                                                    FontWeight.w700,
+                                                color: AppTheme
+                                                    .textPrimary,
+                                              ),
+                                            ),
+                                            Text(
+                                              attachmentLabel != null
+                                                  ? 'Ketuk untuk hapus lampiran'
+                                                  : 'Format: PDF / JPG, maks 5 MB',
+                                              style: TextStyle(
+                                                fontSize: 10.5,
+                                                color: Colors
+                                                    .grey.shade600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Icon(
+                                        attachmentLabel != null
+                                            ? Icons
+                                                .check_circle_rounded
+                                            : Icons
+                                                .chevron_right_rounded,
+                                        color: attachmentLabel != null
+                                            ? AppTheme.statusApproved
+                                            : Colors.grey.shade400,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Checkbox persetujuan
+                              InkWell(
+                                borderRadius:
+                                    BorderRadius.circular(10),
+                                onTap: () => setSheet(
+                                    () => agreement = !agreement),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 6),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: Checkbox(
+                                          value: agreement,
+                                          onChanged: (v) => setSheet(
+                                              () => agreement =
+                                                  v ?? false),
+                                          activeColor:
+                                              AppTheme.primary,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      4)),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          'Saya menyatakan informasi di atas benar dan bersedia mengikuti aturan sebagai admin GudangPro.',
+                                          style: TextStyle(
+                                            fontSize: 11.5,
+                                            color: Colors.grey.shade700,
+                                            height: 1.5,
+                                            fontWeight:
+                                                FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 18),
+
+                              SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    if (!formKey.currentState!
+                                        .validate()) return;
+                                    if (!agreement) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Centang persetujuan terlebih dahulu.'),
+                                          backgroundColor:
+                                              AppTheme.statusRejected,
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    Navigator.pop(ctx);
+                                    _submitAdminRequest(
+                                      reason: reasonCtrl.text.trim(),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.send_rounded,
+                                      size: 18),
+                                  label: const Text(
+                                    'Kirim Pengajuan',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        AppTheme.primary,
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(14)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                width: double.infinity,
+                                child: TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor:
+                                        Colors.grey.shade600,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                  ),
+                                  child: const Text('Batal',
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight:
+                                              FontWeight.w600)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildAdminInfoTile(
+      IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.background,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: AppTheme.primary),
+          const SizedBox(width: 10),
+          Text(
+            '$label:',
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdminFieldLabel(String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 11.5,
+        fontWeight: FontWeight.w800,
+        color: Colors.grey.shade700,
+      ),
+    );
+  }
+
+  Widget _buildAdminTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      validator: validator,
+      style: const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: AppTheme.textPrimary,
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          fontSize: 12,
+          color: Colors.grey.shade400,
+          fontWeight: FontWeight.w500,
+        ),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.only(left: 12, right: 8),
+          child: Icon(icon, size: 18, color: AppTheme.primary),
+        ),
+        prefixIconConstraints:
+            const BoxConstraints(minWidth: 36, minHeight: 36),
+        filled: true,
+        fillColor: AppTheme.background,
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide:
+              const BorderSide(color: AppTheme.primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+              color: AppTheme.statusRejected, width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  // ── Submit pengajuan ──────────────────────────────────────────────────────
+  void _submitAdminRequest({required String reason}) {
+    setState(() {
+      _adminRequestStatus = 'pending';
+      _adminRequestDate = DateTime.now();
+      _adminRequestReason = reason;
+      _adminRejectReason = null;
+    });
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppTheme.statusApproved.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check_circle_rounded,
+                    color: AppTheme.statusApproved, size: 36),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Pengajuan Terkirim',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Pengajuan Anda untuk menjadi admin sedang ditinjau oleh tim Super Admin. Estimasi 1–3 hari kerja.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Selesai',
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Konfirmasi batal pengajuan ────────────────────────────────────────────
+  void _confirmCancelAdminRequest() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text(
+          'Batalkan Pengajuan?',
+          style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: AppTheme.textPrimary,
+              fontSize: 16),
+        ),
+        content: const Text(
+          'Pengajuan admin Anda yang sedang berjalan akan ditarik. Anda dapat mengajukan kembali kapan saja.',
+          style: TextStyle(fontSize: 13, height: 1.45),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Tidak',
+                style: TextStyle(color: AppTheme.primary)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _adminRequestStatus = 'none';
+                _adminRequestDate = null;
+                _adminRequestReason = null;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Pengajuan admin telah dibatalkan.'),
+                  backgroundColor: AppTheme.statusRejected,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.statusRejected,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Ya, Batalkan',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Sheet detail pengajuan yang sedang berjalan ───────────────────────────
+  void _showAdminRequestDetailSheet() {
+    final dateStr = _adminRequestDate != null
+        ? _formatShortDate(_adminRequestDate!)
+        : '-';
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+                BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Detail Pengajuan Admin',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildAdminInfoTile(Icons.event_rounded,
+                  'Tanggal Pengajuan', dateStr),
+              const SizedBox(height: 8),
+              _buildAdminInfoTile(Icons.business_rounded, 'Divisi',
+                  _userOffice),
+              const SizedBox(height: 12),
+              _buildAdminFieldLabel('Alasan Pengajuan'),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.background,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  _adminRequestReason ?? '-',
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: AppTheme.textPrimary,
+                    height: 1.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Tutup',
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ── Item perks kecil di kartu "Tingkatkan ke Admin" ─────────────────────────
+class _AdminPerk extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _AdminPerk({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.white, size: 14),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 11.5,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
